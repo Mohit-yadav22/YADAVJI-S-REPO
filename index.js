@@ -2,7 +2,7 @@ import { connectionDB } from './config/database.js';
 import express from 'express';
 import router from './routers/crudrouter.js';
 import userRoutes from './routers/userrouter.js';
-import userauth from './Middlewares/auth.js';
+import userauth from './middlewares/Auth.js';
 
 connectionDB();
 
