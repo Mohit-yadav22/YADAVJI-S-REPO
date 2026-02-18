@@ -1,8 +1,6 @@
 import mongoose from "mongoose";
-import mongoosePaginate from 'mongoose-paginate-v2'
 
 let StudentSchema = mongoose.Schema({
-    _id:Number,
     name:String,
     age:Number,
     email:{
@@ -12,6 +10,7 @@ let StudentSchema = mongoose.Schema({
 
     },
     phone:String,
+    Image :String,
     city:String
 });
 

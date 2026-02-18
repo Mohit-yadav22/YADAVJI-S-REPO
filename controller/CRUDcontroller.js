@@ -23,11 +23,12 @@ export const getOneData = async (req, res) => {
 // CREATE
 export const getInserData = async (req, res) => {
   try {
-    const data = await StudentModel.create(req.body);
-    res.status(201).json({
-      message: "Data saved successfully",
-      data
-    });
+    const data = await StudentModel(req.body);
+       if(req.file){
+        data.Image = req.file.filename;
+       }
+       let newStudent = await data.save();
+       res.status(200).json({message : "Data saved successfully",newStudent})
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
