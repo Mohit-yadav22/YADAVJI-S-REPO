@@ -10,6 +10,10 @@ const connectionDB = ()=>{
 );
 }
 
+mongoose.connection.once("open", () => {
+    console.log("Connected DB:", mongoose.connection.name);
+});
+
 export { connectionDB };
 
 
