@@ -31,7 +31,7 @@ const filefilter = (req , file , callback)=>
   if(file.mimetype.startsWith('image/')){
     callback(null,true)
 
-  }else if(file.mimetype.startswith('application/pdf')){
+  }else if(file.mimetype.startsWith('application/pdf')){
     callback(null,true)
   }
   else{
