@@ -3,10 +3,13 @@ import express from 'express';
 import router from './routers/crudrouter.js';
 import userRoutes from './routers/userrouter.js';
 import userauth from './middlewares/Auth.js';
+import cors from 'cors'
 
 connectionDB();
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
