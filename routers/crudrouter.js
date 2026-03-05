@@ -1,93 +1,114 @@
-import express from 'express';
+import express from "express";
 import {
   getData,
   getInserData,
   getUpdateData,
   getDeleteData,
   getReadData,
-  getOneData
-} from '../controller/CRUDcontroller.js';
-import StudentModel from '../models/StudentSchema.js';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs'
+  getOneData,
+} from "../controller/CRUDcontroller.js";
 
-
+import StudentModel from "../models/StudentSchema.js";
+import multer from "multer";
+import path from "path";
 
 const router = express.Router();
 
+
+// ================= MULTER STORAGE =================
 const storage = multer.diskStorage({
-  destination:(req,file,callback)=>{
-    callback(null,'./uploads')
+  destination: (req, file, cb) => {
+    cb(null, "./uploads");
   },
-  filename:(req,file,callback)=>{
-    let filename = Date.now() + path.extname(file.originalname)
-    callback(null,filename)
-  }
-})
 
-const filefilter = (req , file , callback)=>
-{
-  if(file.mimetype.startsWith('image/')){
-    callback(null,true)
+  filename: (req, file, cb) => {
+    const filename = Date.now() + path.extname(file.originalname);
+    cb(null, filename);
+  },
+});
 
-  }else if(file.mimetype.startsWith('application/pdf')){
-    callback(null,true)
-  }
-  else{
-    callback('only images are allowed',false)
-  }
-}
 
+// ================= FILE FILTER =================
+const fileFilter = (req, file, cb) => {
+
+  if (file.mimetype.startsWith("image/")) {
+    cb(null, true);
+  } 
+  else if (file.mimetype === "application/pdf") {
+    cb(null, true);
+  } 
+  else {
+    cb(new Error("Only images or PDF allowed"), false);
+  }
+
+};
+
+
+// ================= MULTER CONFIG =================
 const upload = multer({
-  storage:storage,
-  fileFilter:filefilter,
-  limits:(1024*1024*50)
-})
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 1024 * 1024 * 50 } // 50MB
+});
 
 
-// READ ALL
-router.get('/get-students', getData);
+// ================= ROUTES =================
 
-router.get('/:id',  getOneData);
 
-// CREATE
-router.post('/add-data',upload.single('images'), getInserData);
+// GET ALL STUDENTS
+router.get("/get-students", getData);
 
-// UPDATE
-router.put('/update-data/:id', getUpdateData);
 
-// DELETE
-router.delete('/delete-data/:id', getDeleteData);
+// PAGINATION
+router.get("/", async (req, res) => {
 
-// READ ONE
-router.get('/read-data/:id', getReadData);
+  try {
 
-//PAGINATION
-router.get('/',async(req,res)=>{
- 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
 
-  try{
-   
-        let page = parseInt(req.query.page);
-        let limit = parseInt(req.query.limit)
+    const skip = (page - 1) * limit;
 
-  let skip = (page-1) * limit;
-   let totalDocument = await StudentModel.countDocuments()
+    const totalDocument = await StudentModel.countDocuments();
 
-   let data = await StudentModel.find().skip(skip).limit(Number(limit));
+    const data = await StudentModel.find()
+      .skip(skip)
+      .limit(limit);
 
-   res.status(200).json({
-    totalDocument:totalDocument,
-    totalPages:Math.ceil(totalDocument/limit),
-    currentPage : Number(page),
-    limit : Number(limit),
-    data
-   })
-  }catch(err){
-  res.json({message : err.message})
+    res.status(200).json({
+      totalDocument,
+      totalPages: Math.ceil(totalDocument / limit),
+      currentPage: page,
+      limit,
+      data
+    });
+
+  } 
+  catch (err) {
+    res.status(500).json({ message: err.message });
   }
 
-})
+});
+
+
+// GET SINGLE DATA
+router.get("/read-data/:id", getReadData);
+
+
+// GET ONE (ALTERNATIVE)
+router.get("/:id", getOneData);
+
+
+// INSERT DATA
+router.post("/add-data", upload.single("images"), getInserData);
+
+
+// UPDATE DATA
+router.put("/update-data/:id", getUpdateData);
+
+
+// DELETE DATA
+router.delete("/delete-data/:id", getDeleteData);
+
 
 export default router;

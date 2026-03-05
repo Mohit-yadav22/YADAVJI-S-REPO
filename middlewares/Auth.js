@@ -4,28 +4,34 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const userauth = (req, res, next) => {
+
     try {
-        const bearerT = req.headers["authorization"];
-       
 
-        if (typeof bearerT !== "undefined") {
-            let token = bearerT.split(" ")[1];
-        
+        const authHeader = req.headers.authorization;
 
-            let user = jwt.verify(token, process.env.SECRETKEY);
-
-            
-            req.token = user;
-
-            next();
-        } 
-        else {
-            return res.status(401).json({ message: "token not set" });
+        if (!authHeader) {
+            return res.status(401).json({
+                message: "Token not provided"
+            });
         }
+
+        const token = authHeader.split(" ")[1];
+
+        const decoded = jwt.verify(token, process.env.SECRETKEY);
+
+        req.user = decoded;
+
+        next();
+
+    } 
+    catch (error) {
+
+        return res.status(401).json({
+            message: "Invalid or expired token"
+        });
+
     }
-    catch (err) {
-        return res.status(401).json({ message: "invalid or expire token" });
-    }
+
 };
 
 export default userauth;
